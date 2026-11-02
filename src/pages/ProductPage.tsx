@@ -1,15 +1,29 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { sampleProducts } from '../data/sampleProducts'
+import { fetchProductById } from '../api'
+import StatusMessage from '../components/StatusMessage'
+import type { Product } from '../types'
 
 // עמוד הפרטים של מוצר אחד.
 // useParams קורא את המספר מהכתובת: בכתובת /items/3 נקבל id = "3"
 function ProductPage() {
   const { id } = useParams()
-  const product = sampleProducts.find((p) => p.id === Number(id))
+  const [product, setProduct] = useState<Product | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!product) {
-    return <p>המוצר לא נמצא</p>
-  }
+  // [id] בסוף = להביא שוב בכל פעם שהמספר בכתובת משתנה
+  useEffect(() => {
+    setIsLoading(true)
+    setError(null)
+    fetchProductById(Number(id))
+      .then((data) => setProduct(data))
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setIsLoading(false))
+  }, [id])
+
+  if (isLoading) return <StatusMessage type="loading" />
+  if (error || !product) return <StatusMessage type="error" message={error ?? undefined} />
 
   return (
     <section>
