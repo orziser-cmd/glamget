@@ -51,7 +51,7 @@ function MyLookPage({ look, settings, onRemove, onSave }: MyLookPageProps) {
                 <>
                   <Link to={`/items/${product.id}`} className="slot-product">
                     <img src={product.thumbnail} alt={product.title} />
-                    <span>{product.title}</span>
+                    <span dir="auto">{product.title}</span>
                   </Link>
                   <div className="slot-footer">
                     <strong>{formatShekels(finalPriceInShekels(product))}</strong>

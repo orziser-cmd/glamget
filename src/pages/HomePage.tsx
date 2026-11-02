@@ -62,7 +62,6 @@ function HomePage({ settings, onSettingsChange }: HomePageProps) {
           <input
             type="number"
             min={1}
-            step={50}
             value={budget || ''}
             onChange={(e) => {
               setBudget(Number(e.target.value))

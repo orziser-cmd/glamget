@@ -36,7 +36,7 @@ function SavedLooksPage({ savedLooks, onLoad, onDelete }: SavedLooksPageProps) {
           const status = getBudgetStatus(lookTotal(saved.look), saved.budget)
           return (
             <article key={saved.id} className="card saved-card">
-              <h3>{saved.name}</h3>
+              <h3 dir="auto">{saved.name}</h3>
               <p className="summary">
                 {getEventLabel(saved.eventId)} · {new Date(saved.createdAt).toLocaleDateString('he-IL')}
               </p>

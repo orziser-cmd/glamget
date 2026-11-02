@@ -15,11 +15,11 @@ function ProductCard({ product }: ProductCardProps) {
     <Link to={`/items/${product.id}`} className="product-card">
       <div className="product-image">
         <img src={product.thumbnail} alt={product.title} loading="lazy" />
-        {hasDiscount && <span className="badge">{Math.round(product.discountPercentage)}%-</span>}
+        {hasDiscount && <span className="badge" dir="ltr">-{Math.round(product.discountPercentage)}%</span>}
       </div>
       <div className="product-info">
         <p className="product-category">{CATEGORY_LABELS[product.category] ?? product.category}</p>
-        <h3>{product.title}</h3>
+        <h3 dir="auto">{product.title}</h3>
         <p className="price">
           <strong>{formatShekels(finalPriceInShekels(product))}</strong>
           {hasDiscount && <s>{formatShekels(toShekels(product.price))}</s>}

@@ -84,7 +84,7 @@ function ProductPage({ look, settings, onAddToLook }: ProductPageProps) {
 
         <div className="product-details">
           <p className="product-category">{CATEGORY_LABELS[product.category] ?? product.category}</p>
-          <h1>{product.title}</h1>
+          <h1 dir="auto">{product.title}</h1>
           {product.brand && <p className="brand">{product.brand}</p>}
 
           <p className="price price-large">
@@ -97,7 +97,9 @@ function ProductPage({ look, settings, onAddToLook }: ProductPageProps) {
             )}
           </p>
 
-          <p className="description">{product.description}</p>
+          <p className="description" dir="auto">
+            {product.description}
+          </p>
           <p className="meta">
             דירוג {product.rating.toFixed(1)} מתוך 5 · {product.stock} במלאי
           </p>
