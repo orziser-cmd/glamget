@@ -4,6 +4,7 @@ import NavBar from './components/NavBar'
 import CatalogPage from './pages/CatalogPage'
 import HomePage from './pages/HomePage'
 import MyLookPage from './pages/MyLookPage'
+import NotFoundPage from './pages/NotFoundPage'
 import ProductPage from './pages/ProductPage'
 import SavedLooksPage from './pages/SavedLooksPage'
 import type { Look, Product, SavedLook, Settings, SlotId } from './types'
@@ -68,6 +69,8 @@ function App() {
             path="/saved"
             element={<SavedLooksPage savedLooks={savedLooks} onLoad={handleLoadLook} onDelete={handleDeleteLook} />}
           />
+          {/* כוכבית = כל כתובת אחרת שלא מופיעה למעלה */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
     </>
