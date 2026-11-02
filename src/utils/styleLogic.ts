@@ -22,7 +22,7 @@ export const EVENTS: EventOption[] = [
   {
     id: 'wedding',
     label: 'חתונה',
-    categories: ['womens-dresses', 'womens-shoes', 'womens-bags', 'womens-jewellery'],
+    categories: ['womens-dresses','tops','womens-shoes', 'womens-bags', 'womens-jewellery'],
   },
   {
     id: 'evening',
@@ -44,7 +44,7 @@ export const EVENTS: EventOption[] = [
 /** שמות בעברית לקטגוריות של ה-API */
 export const CATEGORY_LABELS: Record<string, string> = {
   'womens-dresses': 'שמלות',
-  tops: 'חולצות',
+  tops: 'שמלות קיץ',
   'womens-shoes': 'נעליים',
   'womens-bags': 'תיקים',
   'womens-jewellery': 'תכשיטים',
