@@ -61,6 +61,16 @@ export interface BudgetStatus {
   isOver: boolean
 }
 
+/** לוק ששמרתי, עם שם ותאריך */
+export interface SavedLook {
+  id: string
+  name: string
+  eventId: EventId
+  budget: number
+  look: Look
+  createdAt: string // תאריך בפורמט טקסט, כדי שאפשר יהיה לשמור אותו ב-localStorage
+}
+
 /** כל מה שאפשר לסנן לפיו בקטלוג */
 export interface ProductFilters {
   eventId: EventId

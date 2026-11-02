@@ -3,6 +3,7 @@ import { sampleProducts } from '../data/sampleProducts'
 import type { Look, ProductFilters } from '../types'
 import {
   addToLook,
+  createSavedLook,
   filterProducts,
   finalPriceInShekels,
   getBudgetStatus,
@@ -136,5 +137,18 @@ describe('תקציב', () => {
     const status = getBudgetStatus(1200, 1000)
     expect(status.isOver).toBe(true)
     expect(status.remaining).toBe(-200)
+  })
+})
+
+describe('לוקים שמורים', () => {
+  it('יוצרת לוק שמור עם שם נקי, האירוע, התקציב והתאריך', () => {
+    const look = addToLook({}, sampleProducts[1])
+    const date = new Date('2026-11-05T10:00:00.000Z')
+    const saved = createSavedLook('  החתונה של רוני ', look, { eventId: 'wedding', budget: 800 }, date)
+    expect(saved.name).toBe('החתונה של רוני')
+    expect(saved.eventId).toBe('wedding')
+    expect(saved.budget).toBe(800)
+    expect(saved.createdAt).toBe('2026-11-05T10:00:00.000Z')
+    expect(lookTotal(saved.look)).toBe(185)
   })
 })

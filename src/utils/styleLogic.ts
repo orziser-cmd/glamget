@@ -5,6 +5,8 @@ import type {
   Look,
   Product,
   ProductFilters,
+  SavedLook,
+  Settings,
   SlotId,
   SlotOption,
 } from '../types'
@@ -159,4 +161,18 @@ export function getBudgetStatus(total: number, budget: number): BudgetStatus {
 /** כמה יעלה הלוק אם אוסיף את המוצר הזה (כולל החלפה של מוצר באותו מקום) */
 export function totalIfAdded(look: Look, product: Product): number {
   return lookTotal(addToLook(look, product))
+}
+
+// ---------- לוקים שמורים ----------
+
+/** יוצר לוק שמור מהלוק הנוכחי. השם מנוקה מרווחים, והמזהה נוצר מהזמן. */
+export function createSavedLook(name: string, look: Look, settings: Settings, now: Date = new Date()): SavedLook {
+  return {
+    id: String(now.getTime()),
+    name: name.trim(),
+    eventId: settings.eventId,
+    budget: settings.budget,
+    look,
+    createdAt: now.toISOString(),
+  }
 }

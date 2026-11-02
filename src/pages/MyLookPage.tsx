@@ -1,17 +1,38 @@
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import BudgetBar from '../components/BudgetBar'
 import type { Look, Settings, SlotId } from '../types'
-import { SLOTS, finalPriceInShekels, formatShekels, getEventLabel, lookTotal } from '../utils/styleLogic'
+import { SLOTS, finalPriceInShekels, formatShekels, getEventLabel, getLookItems, lookTotal } from '../utils/styleLogic'
 
 interface MyLookPageProps {
   look: Look
   settings: Settings
   onRemove: (slot: SlotId) => void
+  onSave: (name: string) => void
 }
 
-// הלוק שלי: מקום לכל סוג פריט, סכום מול התקציב
-function MyLookPage({ look, settings, onRemove }: MyLookPageProps) {
+// הלוק שלי: מקום לכל סוג פריט, סכום מול התקציב, ושמירה
+function MyLookPage({ look, settings, onRemove, onSave }: MyLookPageProps) {
+  const [name, setName] = useState('')
+  const [message, setMessage] = useState('')
   const total = lookTotal(look)
+  const isEmpty = getLookItems(look).length === 0
+
+  function handleSave(e: FormEvent) {
+    e.preventDefault()
+    if (isEmpty) {
+      setMessage('הוסיפי לפחות פריט אחד לפני השמירה')
+      return
+    }
+    if (!name.trim()) {
+      setMessage('תני ללוק שם, למשל "החתונה של רוני"')
+      return
+    }
+    onSave(name)
+    setName('')
+    setMessage('saved')
+  }
 
   return (
     <section className="my-look">
@@ -50,6 +71,32 @@ function MyLookPage({ look, settings, onRemove }: MyLookPageProps) {
       </div>
 
       <BudgetBar total={total} budget={settings.budget} />
+
+      <form className="card save-form" onSubmit={handleSave}>
+        <label htmlFor="look-name">שמירת הלוק</label>
+        <div className="save-row">
+          <input
+            id="look-name"
+            type="text"
+            placeholder="שם ללוק, למשל: החתונה של רוני"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value)
+              setMessage('')
+            }}
+          />
+          <button type="submit" className="btn btn-primary">
+            שמירה
+          </button>
+        </div>
+        {message === 'saved' ? (
+          <p className="added-message">
+            הלוק נשמר! <Link to="/saved">ללוקים השמורים ←</Link>
+          </p>
+        ) : (
+          message && <p className="form-error">{message}</p>
+        )}
+      </form>
     </section>
   )
 }
