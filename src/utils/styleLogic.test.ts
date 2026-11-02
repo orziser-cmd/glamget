@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import { sampleProducts } from '../data/sampleProducts'
-import type { ProductFilters } from '../types'
+import type { Look, ProductFilters } from '../types'
 import {
+  addToLook,
   filterProducts,
   finalPriceInShekels,
+  getBudgetStatus,
   getCategoriesForEvent,
+  getLookItems,
+  getSlotForCategory,
+  lookTotal,
   priceAfterDiscount,
+  removeFromLook,
   toShekels,
+  totalIfAdded,
 } from './styleLogic'
 
 // כל בדיקה = "אני מצפה שאם אתן לפונקציה X, אקבל Y"
@@ -72,5 +79,62 @@ describe('סינון הקטלוג', () => {
   it('מסננת לפי קטגוריה שנבחרה', () => {
     const result = filterProducts(sampleProducts, { ...baseFilters, category: 'womens-bags' })
     expect(result.map((p) => p.id)).toEqual([5])
+  })
+})
+
+describe('הלוק', () => {
+  // עוזר קטן: מוצא מוצר לדוגמה לפי המספר שלו
+  const byId = (id: number) => sampleProducts.find((p) => p.id === id)!
+
+  it('יודעת לאיזה מקום בלוק שייך כל סוג פריט', () => {
+    expect(getSlotForCategory('womens-dresses')).toBe('outfit')
+    expect(getSlotForCategory('sunglasses')).toBe('accessory')
+    expect(getSlotForCategory('smartphones')).toBeNull()
+  })
+
+  it('פריט חדש מאותו סוג מחליף את הישן', () => {
+    let look: Look = {}
+    look = addToLook(look, byId(3)) // נעליים זהובות
+    look = addToLook(look, byId(4)) // נעליים אדומות
+    expect(look.shoes?.id).toBe(4)
+    expect(getLookItems(look)).toHaveLength(1)
+  })
+
+  it('לא משנה את הלוק הישן אלא מחזירה לוק חדש', () => {
+    const empty: Look = {}
+    const withDress = addToLook(empty, byId(2))
+    expect(getLookItems(empty)).toHaveLength(0)
+    expect(getLookItems(withDress)).toHaveLength(1)
+  })
+
+  it('מוציאה פריט מהלוק', () => {
+    const look = addToLook(addToLook({}, byId(2)), byId(5))
+    const after = removeFromLook(look, 'outfit')
+    expect(after.outfit).toBeUndefined()
+    expect(after.bag?.id).toBe(5)
+  })
+
+  it('מחברת את המחירים של כל הלוק', () => {
+    // שמלה (185) + נעליים אדומות (93) = 278
+    const look = addToLook(addToLook({}, byId(2)), byId(4))
+    expect(lookTotal(look)).toBe(278)
+  })
+
+  it('מחשבת כמה יעלה הלוק אם אוסיף פריט', () => {
+    const look = addToLook({}, byId(4)) // נעליים אדומות: 93
+    expect(totalIfAdded(look, byId(2))).toBe(278) // + שמלה
+    expect(totalIfAdded(look, byId(3))).toBe(118) // נעליים זהובות מחליפות את האדומות
+  })
+})
+
+describe('תקציב', () => {
+  it('מחשבת כמה נשאר ובאיזה אחוז', () => {
+    expect(getBudgetStatus(250, 1000)).toEqual({ total: 250, remaining: 750, percentUsed: 25, isOver: false })
+  })
+
+  it('מזהה חריגה מהתקציב', () => {
+    const status = getBudgetStatus(1200, 1000)
+    expect(status.isOver).toBe(true)
+    expect(status.remaining).toBe(-200)
   })
 })

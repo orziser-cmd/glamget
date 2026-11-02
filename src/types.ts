@@ -40,6 +40,27 @@ export interface Settings {
   budget: number // בשקלים
 }
 
+/** "המקומות" בלוק: בגד, נעליים, תיק, אקססורי. בכל מקום יש פריט אחד לכל היותר. */
+export type SlotId = 'outfit' | 'shoes' | 'bag' | 'accessory'
+
+/** מקום בלוק: מזהה, שם בעברית, ואילו קטגוריות נכנסות אליו */
+export interface SlotOption {
+  id: SlotId
+  label: string
+  categories: string[]
+}
+
+/** הלוק: לכל מקום יש מוצר, או שהוא ריק (לכן Partial = לא חובה שיהיו כולם) */
+export type Look = Partial<Record<SlotId, Product>>
+
+/** סיכום של הלוק מול התקציב */
+export interface BudgetStatus {
+  total: number
+  remaining: number
+  percentUsed: number
+  isOver: boolean
+}
+
 /** כל מה שאפשר לסנן לפיו בקטלוג */
 export interface ProductFilters {
   eventId: EventId

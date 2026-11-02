@@ -1,4 +1,13 @@
-import type { EventId, EventOption, Product, ProductFilters } from '../types'
+import type {
+  BudgetStatus,
+  EventId,
+  EventOption,
+  Look,
+  Product,
+  ProductFilters,
+  SlotId,
+  SlotOption,
+} from '../types'
 
 // "המוח" של האפליקציה: חישובים וכללים, בלי שום תצוגה.
 // כל פונקציה פה מקבלת מידע ומחזירה תשובה, ולכן קל לבדוק אותה בבדיקות.
@@ -91,4 +100,63 @@ export function filterProducts(products: Product[], filters: ProductFilters): Pr
     const fitsSearch = product.title.toLowerCase().includes(search)
     return fitsEvent && fitsCategory && fitsBudget && fitsSearch
   })
+}
+
+// ---------- הלוק ----------
+
+/** המקומות בלוק, ואילו קטגוריות נכנסות לכל מקום */
+export const SLOTS: SlotOption[] = [
+  { id: 'outfit', label: 'בגד', categories: ['womens-dresses', 'tops'] },
+  { id: 'shoes', label: 'נעליים', categories: ['womens-shoes'] },
+  { id: 'bag', label: 'תיק', categories: ['womens-bags'] },
+  { id: 'accessory', label: 'אקססורי', categories: ['womens-jewellery', 'womens-watches', 'sunglasses'] },
+]
+
+/** לאיזה מקום בלוק שייך מוצר מקטגוריה מסוימת */
+export function getSlotForCategory(category: string): SlotId | null {
+  const slot = SLOTS.find((s) => s.categories.includes(category))
+  return slot ? slot.id : null
+}
+
+/**
+ * מוסיף מוצר ללוק. אם כבר יש מוצר באותו מקום (למשל נעליים), החדש מחליף את הישן.
+ * הפונקציה לא משנה את הלוק הישן, אלא מחזירה לוק חדש (כך React יודע שמשהו השתנה).
+ */
+export function addToLook(look: Look, product: Product): Look {
+  const slot = getSlotForCategory(product.category)
+  if (!slot) return look
+  return { ...look, [slot]: product }
+}
+
+/** מוציא מהלוק את המוצר שנמצא במקום מסוים */
+export function removeFromLook(look: Look, slot: SlotId): Look {
+  const newLook = { ...look }
+  delete newLook[slot]
+  return newLook
+}
+
+/** כל המוצרים שבלוק, כרשימה רגילה */
+export function getLookItems(look: Look): Product[] {
+  return SLOTS.map((slot) => look[slot.id]).filter((product): product is Product => product !== undefined)
+}
+
+/** כמה עולה כל הלוק, בשקלים */
+export function lookTotal(look: Look): number {
+  return getLookItems(look).reduce((sum, product) => sum + finalPriceInShekels(product), 0)
+}
+
+/** סיכום מול התקציב: כמה הוצאתי, כמה נשאר, באיזה אחוז, והאם חרגתי */
+export function getBudgetStatus(total: number, budget: number): BudgetStatus {
+  const percentUsed = budget > 0 ? Math.round((total / budget) * 100) : 0
+  return {
+    total,
+    remaining: budget - total,
+    percentUsed,
+    isOver: total > budget,
+  }
+}
+
+/** כמה יעלה הלוק אם אוסיף את המוצר הזה (כולל החלפה של מוצר באותו מקום) */
+export function totalIfAdded(look: Look, product: Product): number {
+  return lookTotal(addToLook(look, product))
 }
