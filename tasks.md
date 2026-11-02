@@ -6,7 +6,7 @@
   React + Vite + TypeScript, Vitest ו-React Router.
   Done when: `npm run dev` מציג את הכותרת Glamget בלי שגיאות בקונסול.
 
-- [ ] **משימה 1: רשימה מקובץ מקומי**
+- [x] **משימה 1: רשימה מקובץ מקומי**
   טיפוס `Product`, קובץ עם כמה מוצרים לדוגמה, רכיב `ProductCard`, ורשימה שנבנית עם `map` ו-`key`.
   Done when: רואים כרטיסים של מוצרים מהקובץ המקומי, בלי API.
 
