@@ -46,6 +46,11 @@ export function toShekels(usd: number): number {
   return Math.round(usd * USD_TO_ILS)
 }
 
+/** מציג מספר כמחיר בשקלים, למשל 1200 → "1,200 ₪" */
+export function formatShekels(amount: number): string {
+  return `${amount.toLocaleString('en-US')} ₪`
+}
+
 /** מחיר אחרי הנחה. למשל 100 עם 20% הנחה = 80 */
 export function priceAfterDiscount(price: number, discountPercentage: number): number {
   return price * (1 - discountPercentage / 100)
