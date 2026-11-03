@@ -106,7 +106,17 @@ function MyLookPage({ look, settings, onAdd, onRemove, onSave, editingName, onNe
     <section className="my-look">
       <div className="page-header">
         <h1>הלוק שלי</h1>
-        <p className="summary">ל{getEventLabel(settings.eventId)}</p>
+        <p className="summary">
+          ל{getEventLabel(settings.eventId)}
+          {!isEmpty && !isEditing && (
+            <>
+              {' · '}
+              <button type="button" className="btn-link" onClick={handleNewLook}>
+                ניקוי והתחלת לוק חדש
+              </button>
+            </>
+          )}
+        </p>
       </div>
 
       {isEditing && (

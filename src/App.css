@@ -352,154 +352,185 @@ a:focus-visible {
   }
 }
 
-/* ===== דף הבית ===== */
+/* ===== דף הבית: זרימה אחת מלמעלה למטה, באמצע ===== */
 .home {
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 4rem;
-  align-items: start;
-  padding-top: 2rem;
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2rem;
 }
 
+/* פס התמונות העליון */
+.hero-collage {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+  height: 280px;
+}
+
+.collage-item {
+  position: relative;
+  height: 100%;
+  border-radius: 999px 999px 0 0; /* קשת למעלה, כמו חלון ראווה */
+  overflow: hidden;
+  animation: fade-up 0.7s var(--ease) both;
+}
+
+.collage-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12%;
+  mix-blend-mode: multiply;
+}
+
+/* גבהים וצבעים מעט שונים לכל תמונה, כדי שזה ירגיש חי */
+.collage-1 { height: 82%; background: #f5e9e4; animation-delay: 0.05s; }
+.collage-2 { height: 96%; background: #ece8f2; animation-delay: 0.12s; }
+.collage-3 { height: 100%; background: #efebe4; animation-delay: 0.19s; }
+.collage-4 { height: 90%; background: #e7efec; animation-delay: 0.26s; }
+.collage-5 { height: 78%; background: #f3ecef; animation-delay: 0.33s; }
+
 .hero {
-  position: sticky;
-  top: 9rem;
-  animation: fade-up 0.6s var(--ease) both;
+  text-align: center;
+  animation: fade-up 0.6s 0.2s var(--ease) both;
 }
 
 .eyebrow {
-  margin: 0 0 1rem;
-  font-size: 0.85rem;
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0.3em;
   color: var(--ink-soft);
   direction: ltr;
-  text-align: right;
 }
 
 .hero h1 {
-  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
   font-weight: 800;
-  line-height: 1.02;
+  line-height: 1.05;
   letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
 }
 
 .hero-text {
   color: var(--ink-soft);
-  font-size: 1.15rem;
-  max-width: 34ch;
+  font-size: 1.05rem;
+  max-width: 46ch;
+  margin: 0 auto;
 }
 
 .setup-form {
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  animation: fade-up 0.6s 0.1s var(--ease) both;
+  gap: 1rem;
+  animation: fade-up 0.6s 0.3s var(--ease) both;
 }
 
 .step-title {
   display: flex;
   align-items: baseline;
-  gap: 0.75rem;
-  margin: 0.5rem 0 0;
-  font-size: 1.3rem;
+  gap: 0.6rem;
+  margin: 0.75rem 0 0;
+  font-size: 1.15rem;
 }
 
 .step-title span {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--ink-soft);
   letter-spacing: 0.1em;
 }
 
+/* כרטיסי האירועים: קטנים, עם תמונה ורקע פסטלי עדין */
 .event-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-.event-tile {
-  position: relative;
+.event-card {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  min-height: 130px;
-  padding: 1.1rem 1.25rem;
-  border: 2px solid transparent;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0;
+  border: none;
+  background: none;
   font: inherit;
-  text-align: right;
+  color: var(--ink);
   cursor: pointer;
-  overflow: hidden;
-  transition: transform 0.25s var(--ease), border-color 0.2s, box-shadow 0.25s;
 }
 
-.event-tile:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+.event-image {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.25s var(--ease);
 }
+
+.event-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 14%;
+  mix-blend-mode: multiply;
+  transition: transform 0.5s var(--ease);
+}
+
+.event-card:hover .event-image img {
+  transform: scale(1.06);
+}
+
+.event-wedding .event-image { background: #f5e9e4; }
+.event-evening .event-image { background: #ece8f2; }
+.event-work .event-image { background: #efebe4; }
+.event-everyday .event-image { background: #e7efec; }
 
 .event-name {
-  font-size: 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.event-active .event-image {
+  border-color: var(--ink);
+}
+
+.event-active .event-name {
+  color: var(--ink);
   font-weight: 700;
-}
-
-.event-check {
-  display: grid;
-  place-items: center;
-  width: 1.8rem;
-  height: 1.8rem;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  font-size: 0.9rem;
-  opacity: 0.35;
-  transition: all 0.2s;
-}
-
-.event-active {
-  border-color: var(--ink);
-}
-
-.event-active .event-check {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--white);
-  opacity: 1;
-}
-
-/* צבע לכל אירוע */
-.event-wedding {
-  background: linear-gradient(135deg, #f7e6dc, #efd3c4);
-  color: #5a3424;
-}
-
-.event-evening {
-  background: linear-gradient(135deg, #2b2340, #4b2c4f);
-  color: #f6eefa;
-}
-
-.event-evening.event-active {
-  border-color: #c9a0dc;
-}
-
-.event-work {
-  background: linear-gradient(135deg, #e9e5dc, #d9d2c3);
-  color: #3d372b;
-}
-
-.event-everyday {
-  background: linear-gradient(135deg, #dcecf2, #c9e2d6);
-  color: #23423a;
 }
 
 .budget-picker {
   background: var(--white);
   border: 1px solid var(--line);
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.budget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .budget-value {
-  margin: 0 0 0.75rem;
-  font-size: 2.6rem;
+  margin: 0;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -515,19 +546,20 @@ input[type='range'] {
   justify-content: space-between;
   font-size: 0.8rem;
   color: var(--ink-soft);
-  margin-bottom: 1rem;
 }
 
 .budget-exact {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
+  gap: 0.6rem;
+  font-size: 0.85rem;
   color: var(--ink-soft);
+  white-space: nowrap;
 }
 
 .budget-exact input {
-  max-width: 9rem;
+  width: 6.5rem;
+  padding: 0.4rem 0.25rem;
 }
 
 /* ===== קטלוג ===== */
@@ -1110,15 +1142,40 @@ select:hover {
     justify-content: center;
   }
 
-  .home,
   .product-layout {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
 
-  .hero,
   .product-details {
     position: static;
+  }
+
+  .home {
+    gap: 1.5rem;
+  }
+
+  .hero-collage {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    height: 190px;
+  }
+
+  .collage-4,
+  .collage-5 {
+    display: none;
+  }
+
+  .event-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .budget-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .budget-value {
+    white-space: nowrap;
   }
 
   .filter-bar {
@@ -1140,10 +1197,6 @@ select:hover {
   .look-slots {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem 0.6rem;
-  }
-
-  .event-tile {
-    min-height: 100px;
   }
 
   .save-row {
