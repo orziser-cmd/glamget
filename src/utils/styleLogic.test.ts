@@ -7,6 +7,7 @@ import {
   createSavedLook,
   filterProducts,
   finalPriceInShekels,
+  firstSentence,
   getBudgetStatus,
   getCategoriesForEvent,
   getLookItems,
@@ -169,11 +170,6 @@ describe('מיון', () => {
     expect(sorted[0].id).toBe(9) // הטלפון הוא היקר ביותר ברשימה לדוגמה
   })
 
-  it('ממיינת לפי ההנחה הגדולה ביותר', () => {
-    const sorted = sortProducts(sampleProducts, 'discount')
-    expect(sorted[0].id).toBe(3) // הנעליים הזהובות, 20% הנחה
-  })
-
   it('לא משנה את הרשימה המקורית', () => {
     const before = sampleProducts.map((p) => p.id)
     sortProducts(sampleProducts, 'price-desc')
@@ -249,5 +245,15 @@ describe('חלופות לפריט בלוק', () => {
     const look = addToLook({}, byId(4))
     const alternatives = alternativesFor(sampleProducts, byId(4), look, { eventId: 'wedding', budget: 120 })
     expect(alternatives.map((p) => p.id)).toEqual([3])
+  })
+})
+
+describe('תיאור קצר', () => {
+  it('מחזירה רק את המשפט הראשון', () => {
+    expect(firstSentence('A classic black bag. It goes with everything. Buy now!')).toBe('A classic black bag.')
+  })
+
+  it('מחזירה את כל הטקסט אם יש בו משפט אחד בלי נקודה', () => {
+    expect(firstSentence('  Simple and elegant  ')).toBe('Simple and elegant')
   })
 })

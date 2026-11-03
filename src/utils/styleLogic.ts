@@ -63,12 +63,19 @@ export function formatShekels(amount: number): string {
   return `${amount.toLocaleString('en-US')} ₪`
 }
 
+/** מחזיר רק את המשפט הראשון של טקסט (עד הנקודה, סימן הקריאה או סימן השאלה הראשון) */
+export function firstSentence(text: string): string {
+  const trimmed = text.trim()
+  const match = trimmed.match(/^.*?[.!?](\s|$)/)
+  return match ? match[0].trim() : trimmed
+}
+
 /** מחיר אחרי הנחה. למשל 100 עם 20% הנחה = 80 */
 export function priceAfterDiscount(price: number, discountPercentage: number): number {
   return price * (1 - discountPercentage / 100)
 }
 
-/** המחיר הסופי של מוצר בשקלים, אחרי הנחה */
+/** המחיר העדכני של מוצר בשקלים: ה-API נותן מחיר ואחוז הנחה, והמחיר העדכני הוא אחרי ההנחה */
 export function finalPriceInShekels(product: Product): number {
   return toShekels(priceAfterDiscount(product.price, product.discountPercentage))
 }
@@ -198,21 +205,15 @@ export function replaceSavedLook(list: SavedLook[], updated: SavedLook): SavedLo
 
 /** אפשרויות המיון, עם שם בעברית */
 export const SORT_OPTIONS: { id: SortOption; label: string }[] = [
-  { id: 'recommended', label: 'מומלץ' },
   { id: 'price-asc', label: 'מחיר: מהזול ליקר' },
   { id: 'price-desc', label: 'מחיר: מהיקר לזול' },
-  { id: 'discount', label: 'ההנחה הגדולה ביותר' },
 ]
 
-/**
- * ממיין מוצרים. מחזיר רשימה חדשה ולא משנה את המקורית.
- * 'recommended' = הסדר שבו המוצרים הגיעו מה-API.
- */
+/** ממיין מוצרים לפי המחיר העדכני בשקלים. מחזיר רשימה חדשה ולא משנה את המקורית. */
 export function sortProducts(products: Product[], sort: SortOption): Product[] {
   const copy = [...products]
   if (sort === 'price-asc') copy.sort((a, b) => finalPriceInShekels(a) - finalPriceInShekels(b))
   if (sort === 'price-desc') copy.sort((a, b) => finalPriceInShekels(b) - finalPriceInShekels(a))
-  if (sort === 'discount') copy.sort((a, b) => b.discountPercentage - a.discountPercentage)
   return copy
 }
 

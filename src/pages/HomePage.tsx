@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchAllProducts } from '../api'
+import EventIcon from '../components/EventIcon'
 import type { EventId, Product, Settings } from '../types'
 import { EVENTS, formatShekels } from '../utils/styleLogic'
 
@@ -11,15 +12,15 @@ interface HomePageProps {
 }
 
 // התמונות בפס העליון: פריט אחד מכל אחת מהקטגוריות האלה
-const HERO_CATEGORIES = ['womens-dresses', 'womens-shoes', 'womens-bags', 'womens-jewellery', 'sunglasses']
-
-// לכל אירוע: מאיזו קטגוריה לקחת את התמונה שמופיעה בכרטיס שלו
-const EVENT_COVER: Record<EventId, string> = {
-  wedding: 'womens-dresses',
-  evening: 'womens-shoes',
-  work: 'womens-bags',
-  everyday: 'sunglasses',
-}
+const HERO_CATEGORIES = [
+  'womens-dresses',
+  'womens-shoes',
+  'womens-bags',
+  'tops',
+  'womens-jewellery',
+  'womens-watches',
+  'sunglasses',
+]
 
 // מחזיר את התמונה של המוצר הראשון בקטגוריה (או undefined אם עוד אין מוצרים)
 function coverImage(products: Product[], category: string): string | undefined {
@@ -30,7 +31,9 @@ function coverImage(products: Product[], category: string): string | undefined {
 // מסך הפתיחה: בוחרים אירוע ותקציב, ועוברים לקטלוג
 function HomePage({ settings, onSettingsChange }: HomePageProps) {
   // הבחירות נשמרות כאן רק עד שלוחצים על הכפתור
-  const [eventId, setEventId] = useState<EventId>(settings.eventId)
+  // אף אירוע לא מסומן מראש: המשתמשת בוחרת בעצמה בכל פעם (null = עוד לא נבחר)
+  const [eventId, setEventId] = useState<EventId | null>(null)
+  const [eventError, setEventError] = useState('')
   const [budget, setBudget] = useState<number>(settings.budget)
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -50,6 +53,10 @@ function HomePage({ settings, onSettingsChange }: HomePageProps) {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault() // מונע מהדפדפן לרענן את הדף
+    if (!eventId) {
+      setEventError('בחרי לאיזה אירוע')
+      return
+    }
     if (!budget || budget <= 0) {
       setError('הקלידי תקציב גדול מ-0')
       return
@@ -78,31 +85,30 @@ function HomePage({ settings, onSettingsChange }: HomePageProps) {
       </div>
 
       <form className="setup-form" onSubmit={handleSubmit}>
-        <h2 className="step-title">
-          <span>01</span> לאיזה אירוע?
-        </h2>
+        <h2 className="step-title">לאיזה אירוע?</h2>
         <div className="event-grid">
           {EVENTS.map((event) => {
-            const image = coverImage(products, EVENT_COVER[event.id])
             const isActive = event.id === eventId
             return (
               <button
                 type="button"
                 key={event.id}
                 className={`event-card event-${event.id}${isActive ? ' event-active' : ''}`}
-                onClick={() => setEventId(event.id)}
+                onClick={() => {
+                  setEventId(event.id)
+                  setEventError('')
+                }}
                 aria-pressed={isActive}
               >
-                <span className="event-image">{image && <img src={image} alt="" />}</span>
+                <EventIcon eventId={event.id} />
                 <span className="event-name">{event.label}</span>
               </button>
             )
           })}
         </div>
+        {eventError && <p className="form-error">{eventError}</p>}
 
-        <h2 className="step-title">
-          <span>02</span> מה התקציב?
-        </h2>
+        <h2 className="step-title">מה התקציב?</h2>
         <div className="budget-picker">
           <div className="budget-row">
             <p className="budget-value">{formatShekels(budget || 0)}</p>

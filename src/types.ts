@@ -72,7 +72,7 @@ export interface SavedLook {
 }
 
 /** אפשרויות המיון בקטלוג */
-export type SortOption = 'recommended' | 'price-asc' | 'price-desc' | 'discount'
+export type SortOption = 'price-asc' | 'price-desc'
 
 /** כל מה שאפשר לסנן לפיו בקטלוג */
 export interface ProductFilters {

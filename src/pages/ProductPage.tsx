@@ -6,9 +6,9 @@ import type { Look, Product, Settings } from '../types'
 import {
   CATEGORY_LABELS,
   finalPriceInShekels,
+  firstSentence,
   formatShekels,
   getSlotForCategory,
-  toShekels,
   totalIfAdded,
 } from '../utils/styleLogic'
 
@@ -46,7 +46,6 @@ function ProductPage({ look, settings, onAddToLook }: ProductPageProps) {
   if (error || !product) return <StatusMessage type="error" message={error ?? undefined} />
 
   const finalPrice = finalPriceInShekels(product)
-  const hasDiscount = product.discountPercentage >= 1
   const canBeInLook = getSlotForCategory(product.category) !== null
   const newTotal = totalIfAdded(look, product)
   const fitsBudget = newTotal <= settings.budget
@@ -89,19 +88,11 @@ function ProductPage({ look, settings, onAddToLook }: ProductPageProps) {
 
           <p className="price price-large">
             <strong>{formatShekels(finalPrice)}</strong>
-            {hasDiscount && (
-              <>
-                <s>{formatShekels(toShekels(product.price))}</s>
-                <span className="badge badge-inline">{Math.round(product.discountPercentage)}% הנחה</span>
-              </>
-            )}
           </p>
 
+          {/* רק המשפט הראשון: התיאור מגיע מה-API באנגלית, ומשפט אחד מספיק כדי להבין מה הפריט */}
           <p className="description" dir="auto">
-            {product.description}
-          </p>
-          <p className="meta">
-            דירוג {product.rating.toFixed(1)} מתוך 5 · {product.stock} במלאי
+            {firstSentence(product.description)}
           </p>
 
           {canBeInLook && (
@@ -129,7 +120,7 @@ function ProductPage({ look, settings, onAddToLook }: ProductPageProps) {
             target="_blank"
             rel="noreferrer"
           >
-            חפשי משהו דומה בחנויות אמיתיות ↗
+            מצאי פריט דומה לקנייה ↗
           </a>
         </div>
       </div>

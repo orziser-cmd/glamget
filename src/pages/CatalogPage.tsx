@@ -19,7 +19,7 @@ function CatalogPage({ settings }: CatalogPageProps) {
   const [error, setError] = useState<string | null>(null)
   const [category, setCategory] = useState('all')
   const [search, setSearch] = useState('')
-  const [sort, setSort] = useState<SortOption>('recommended')
+  const [sort, setSort] = useState<SortOption>('price-asc') // מהזול ליקר, כי הכול סובב סביב תקציב
 
   // useEffect רץ אחרי שהעמוד מופיע. [] בסוף = רק פעם אחת.
   useEffect(() => {
