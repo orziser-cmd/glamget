@@ -7,7 +7,6 @@ import type { EventId, Product, Settings } from '../types'
 import { EVENTS, formatShekels } from '../utils/styleLogic'
 
 interface HomePageProps {
-  settings: Settings
   onSettingsChange: (settings: Settings) => void
 }
 
@@ -29,12 +28,12 @@ function coverImage(products: Product[], category: string): string | undefined {
 }
 
 // מסך הפתיחה: בוחרים אירוע ותקציב, ועוברים לקטלוג
-function HomePage({ settings, onSettingsChange }: HomePageProps) {
+function HomePage({ onSettingsChange }: HomePageProps) {
   // הבחירות נשמרות כאן רק עד שלוחצים על הכפתור
   // אף אירוע לא מסומן מראש: המשתמשת בוחרת בעצמה בכל פעם (null = עוד לא נבחר)
   const [eventId, setEventId] = useState<EventId | null>(null)
   const [eventError, setEventError] = useState('')
-  const [budget, setBudget] = useState<number>(settings.budget)
+  const [budget, setBudget] = useState<number>(0) // 0 = עוד לא נבחר תקציב
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
@@ -58,7 +57,7 @@ function HomePage({ settings, onSettingsChange }: HomePageProps) {
       return
     }
     if (!budget || budget <= 0) {
-      setError('הקלידי תקציב גדול מ-0')
+      setError('בחרי תקציב')
       return
     }
     onSettingsChange({ eventId, budget })
@@ -111,7 +110,9 @@ function HomePage({ settings, onSettingsChange }: HomePageProps) {
         <h2 className="step-title">מה התקציב?</h2>
         <div className="budget-picker">
           <div className="budget-row">
-            <p className="budget-value">{formatShekels(budget || 0)}</p>
+            <p className={budget ? 'budget-value' : 'budget-value budget-empty'}>
+              {budget ? formatShekels(budget) : 'גררי או הקלידי סכום'}
+            </p>
             <label className="budget-exact">
               סכום מדויק:
               <input

@@ -3,14 +3,21 @@ import type { Product, ProductsResponse } from './types'
 // הכתובת של "המחסן" באינטרנט
 const BASE_URL = 'https://dummyjson.com/products'
 
+// "זיכרון" קטן: אחרי שהמוצרים הגיעו פעם אחת, שומרים אותם כאן.
+// ככה מסך הפתיחה, הקטלוג ועמוד הלוק לא מבקשים את אותו מידע שוב ושוב.
+let cachedProducts: Product[] | null = null
+
 /** מביא את כל המוצרים מהחנות. limit=0 אומר "בלי הגבלה, תביאי הכול". */
 export async function fetchAllProducts(): Promise<Product[]> {
+  if (cachedProducts) return cachedProducts // כבר יש לנו אותם, לא צריך אינטרנט
+
   const response = await fetch(`${BASE_URL}?limit=0`)
   // response.ok אומר שהשרת ענה "הכול בסדר". אחרת זורקים שגיאה.
   if (!response.ok) {
     throw new Error(`השרת החזיר שגיאה (${response.status})`)
   }
   const data: ProductsResponse = await response.json()
+  cachedProducts = data.products
   return data.products
 }
 

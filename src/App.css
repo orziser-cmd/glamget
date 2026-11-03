@@ -513,6 +513,12 @@ a:focus-visible {
   line-height: 1;
 }
 
+.budget-value.budget-empty {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
 input[type='range'] {
   width: 100%;
   accent-color: var(--ink);
@@ -764,15 +770,6 @@ select:hover {
   text-align: right;
 }
 
-.meta {
-  color: var(--ink-soft);
-  font-size: 0.85rem;
-  margin: 0;
-  padding: 0.75rem 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
 .look-hint {
   background: var(--success-bg);
   color: var(--success);
@@ -972,23 +969,6 @@ select:hover {
   padding-top: 0.5rem;
   font-size: 0.85rem;
   color: var(--ink-soft);
-}
-
-.slot-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 3 / 4;
-  border: 1px dashed #c8c8c8;
-  text-decoration: none;
-  color: var(--ink-soft);
-  transition: all 0.2s;
-}
-
-.slot-add:hover {
-  border-color: var(--ink);
-  color: var(--ink);
-  background: var(--white);
 }
 
 .budget {

@@ -104,7 +104,7 @@ function App() {
       <NavBar lookCount={getLookItems(look).length} savedCount={savedLooks.length} />
       <main>
         <Routes>
-          <Route path="/" element={<HomePage settings={settings} onSettingsChange={setSettings} />} />
+          <Route path="/" element={<HomePage onSettingsChange={setSettings} />} />
           <Route path="/items" element={<CatalogPage settings={settings} />} />
           <Route
             path="/items/:id"
