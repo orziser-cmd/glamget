@@ -3,6 +3,7 @@ import { sampleProducts } from '../data/sampleProducts'
 import type { Look, ProductFilters } from '../types'
 import {
   addToLook,
+  alternativesFor,
   createSavedLook,
   filterProducts,
   finalPriceInShekels,
@@ -13,8 +14,12 @@ import {
   lookTotal,
   priceAfterDiscount,
   removeFromLook,
+  replaceSavedLook,
+  sortProducts,
+  suggestForSlot,
   toShekels,
   totalIfAdded,
+  updateSavedLook,
 } from './styleLogic'
 
 // כל בדיקה = "אני מצפה שאם אתן לפונקציה X, אקבל Y"
@@ -150,5 +155,99 @@ describe('לוקים שמורים', () => {
     expect(saved.budget).toBe(800)
     expect(saved.createdAt).toBe('2026-11-05T10:00:00.000Z')
     expect(lookTotal(saved.look)).toBe(185)
+  })
+})
+
+describe('מיון', () => {
+  it('ממיינת מהזול ליקר לפי המחיר הסופי בשקלים', () => {
+    const prices = sortProducts(sampleProducts, 'price-asc').map(finalPriceInShekels)
+    expect(prices).toEqual([...prices].sort((a, b) => a - b))
+  })
+
+  it('ממיינת מהיקר לזול', () => {
+    const sorted = sortProducts(sampleProducts, 'price-desc')
+    expect(sorted[0].id).toBe(9) // הטלפון הוא היקר ביותר ברשימה לדוגמה
+  })
+
+  it('ממיינת לפי ההנחה הגדולה ביותר', () => {
+    const sorted = sortProducts(sampleProducts, 'discount')
+    expect(sorted[0].id).toBe(3) // הנעליים הזהובות, 20% הנחה
+  })
+
+  it('לא משנה את הרשימה המקורית', () => {
+    const before = sampleProducts.map((p) => p.id)
+    sortProducts(sampleProducts, 'price-desc')
+    expect(sampleProducts.map((p) => p.id)).toEqual(before)
+  })
+})
+
+describe('השלימי את הלוק', () => {
+  const byId = (id: number) => sampleProducts.find((p) => p.id === id)!
+
+  it('מציעה רק פריטים מהסוג החסר, מהזול ליקר', () => {
+    const suggestions = suggestForSlot(sampleProducts, 'shoes', {}, { eventId: 'wedding', budget: 1000 })
+    expect(suggestions.map((p) => p.id)).toEqual([4, 3]) // אדומות (93) ואז זהובות (118)
+  })
+
+  it('מציעה רק מה שנכנס בתקציב שנשאר', () => {
+    // שמלה ב-185 ₪ ותקציב 300 ₪: נשארו 115 ₪, ולכן רק הנעליים האדומות (93) נכנסות
+    const look = addToLook({}, byId(2))
+    const suggestions = suggestForSlot(sampleProducts, 'shoes', look, { eventId: 'wedding', budget: 300 })
+    expect(suggestions.map((p) => p.id)).toEqual([4])
+  })
+
+  it('לא מציעה פריטים שלא מתאימים לאירוע', () => {
+    // משקפי שמש לא מתאימים לחתונה
+    const suggestions = suggestForSlot(sampleProducts, 'accessory', {}, { eventId: 'wedding', budget: 1000 })
+    expect(suggestions.some((p) => p.category === 'sunglasses')).toBe(false)
+  })
+
+  it('מחזירה לכל היותר את מספר ההצעות שביקשו', () => {
+    const suggestions = suggestForSlot(sampleProducts, 'outfit', {}, { eventId: 'evening', budget: 5000 }, 1)
+    expect(suggestions).toHaveLength(1)
+  })
+})
+
+describe('עריכת לוק שמור', () => {
+  const byId = (id: number) => sampleProducts.find((p) => p.id === id)!
+  const original = createSavedLook('חתונה', addToLook({}, byId(2)), { eventId: 'wedding', budget: 800 }, new Date('2026-11-01T10:00:00.000Z'))
+
+  it('מעדכנת את הלוק ושומרת על אותו מזהה ותאריך', () => {
+    const newLook = addToLook(original.look, byId(4))
+    const updated = updateSavedLook(original, 'חתונה', newLook, { eventId: 'wedding', budget: 900 })
+    expect(updated.id).toBe(original.id)
+    expect(updated.createdAt).toBe(original.createdAt)
+    expect(updated.budget).toBe(900)
+    expect(getLookItems(updated.look)).toHaveLength(2)
+  })
+
+  it('משאירה את השם הישן אם השם החדש ריק', () => {
+    const updated = updateSavedLook(original, '   ', original.look, { eventId: 'wedding', budget: 800 })
+    expect(updated.name).toBe('חתונה')
+  })
+
+  it('מחליפה ברשימה רק את הלוק עם אותו מזהה, בלי ליצור כפילות', () => {
+    const other = { ...original, id: 'other', name: 'אחר' }
+    const updated = { ...original, name: 'חתונה מעודכנת' }
+    const result = replaceSavedLook([original, other], updated)
+    expect(result).toHaveLength(2)
+    expect(result.map((s) => s.name)).toEqual(['חתונה מעודכנת', 'אחר'])
+  })
+})
+
+describe('חלופות לפריט בלוק', () => {
+  const byId = (id: number) => sampleProducts.find((p) => p.id === id)!
+
+  it('מציעה פריטים מאותו סוג, בלי הפריט הנוכחי', () => {
+    const look = addToLook({}, byId(4)) // נעליים אדומות
+    const alternatives = alternativesFor(sampleProducts, byId(4), look, { eventId: 'wedding', budget: 1000 })
+    expect(alternatives.map((p) => p.id)).toEqual([3]) // רק הזהובות
+  })
+
+  it('לוקחת בחשבון שהפריט הישן יוצא מהלוק', () => {
+    // תקציב 120: אדומות (93) בלוק. זהובות (118) מחליפות אותן ולכן נכנסות בתקציב
+    const look = addToLook({}, byId(4))
+    const alternatives = alternativesFor(sampleProducts, byId(4), look, { eventId: 'wedding', budget: 120 })
+    expect(alternatives.map((p) => p.id)).toEqual([3])
   })
 })

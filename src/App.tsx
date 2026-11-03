@@ -8,7 +8,14 @@ import NotFoundPage from './pages/NotFoundPage'
 import ProductPage from './pages/ProductPage'
 import SavedLooksPage from './pages/SavedLooksPage'
 import type { Look, Product, SavedLook, Settings, SlotId } from './types'
-import { addToLook, createSavedLook, getLookItems, removeFromLook } from './utils/styleLogic'
+import {
+  addToLook,
+  createSavedLook,
+  getLookItems,
+  removeFromLook,
+  replaceSavedLook,
+  updateSavedLook,
+} from './utils/styleLogic'
 import { loadFromStorage, saveToStorage } from './utils/storage'
 
 const DEFAULT_SETTINGS: Settings = { eventId: 'wedding', budget: 1000 }
@@ -20,11 +27,16 @@ function App() {
   const [settings, setSettings] = useState<Settings>(() => loadFromStorage('glamget-settings', DEFAULT_SETTINGS))
   const [look, setLook] = useState<Look>(() => loadFromStorage('glamget-look', {}))
   const [savedLooks, setSavedLooks] = useState<SavedLook[]>(() => loadFromStorage('glamget-saved', []))
+  // אם פתחנו לוק שמור לעריכה, כאן נשמר המזהה שלו (null = לוק חדש)
+  const [editingId, setEditingId] = useState<string | null>(() => loadFromStorage<string | null>('glamget-editing', null))
 
   // בכל פעם שמשהו משתנה, שומרים אותו מחדש
   useEffect(() => saveToStorage('glamget-settings', settings), [settings])
   useEffect(() => saveToStorage('glamget-look', look), [look])
   useEffect(() => saveToStorage('glamget-saved', savedLooks), [savedLooks])
+  useEffect(() => saveToStorage('glamget-editing', editingId), [editingId])
+
+  const editingLook = savedLooks.find((saved) => saved.id === editingId) ?? null
 
   function handleAddToLook(product: Product) {
     setLook((current) => addToLook(current, product))
@@ -35,17 +47,31 @@ function App() {
   }
 
   function handleSaveLook(name: string) {
-    const saved = createSavedLook(name, look, settings)
-    setSavedLooks((current) => [saved, ...current]) // החדש ראשון ברשימה
+    if (editingLook) {
+      // עריכה של לוק קיים: מעדכנים אותו במקום ליצור עוד אחד
+      const updated = updateSavedLook(editingLook, name, look, settings)
+      setSavedLooks((current) => replaceSavedLook(current, updated))
+    } else {
+      const saved = createSavedLook(name, look, settings)
+      setSavedLooks((current) => [saved, ...current]) // החדש ראשון ברשימה
+    }
+    handleNewLook() // אחרי השמירה מתחילים לוק חדש ונקי
+  }
+
+  function handleNewLook() {
+    setLook({})
+    setEditingId(null)
   }
 
   function handleLoadLook(saved: SavedLook) {
     setLook(saved.look)
     setSettings({ eventId: saved.eventId, budget: saved.budget })
+    setEditingId(saved.id)
   }
 
   function handleDeleteLook(id: string) {
     setSavedLooks((current) => current.filter((saved) => saved.id !== id))
+    if (id === editingId) setEditingId(null)
   }
 
   return (
@@ -62,7 +88,15 @@ function App() {
           <Route
             path="/look"
             element={
-              <MyLookPage look={look} settings={settings} onRemove={handleRemoveFromLook} onSave={handleSaveLook} />
+              <MyLookPage
+                look={look}
+                settings={settings}
+                onAdd={handleAddToLook}
+                onRemove={handleRemoveFromLook}
+                onSave={handleSaveLook}
+                editingName={editingLook?.name ?? null}
+                onNewLook={handleNewLook}
+              />
             }
           />
           <Route

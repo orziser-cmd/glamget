@@ -4,8 +4,8 @@ import { fetchAllProducts } from '../api'
 import FilterBar from '../components/FilterBar'
 import ProductCard from '../components/ProductCard'
 import StatusMessage from '../components/StatusMessage'
-import type { Product, Settings } from '../types'
-import { filterProducts, formatShekels, getCategoriesForEvent, getEventLabel } from '../utils/styleLogic'
+import type { Product, Settings, SortOption } from '../types'
+import { filterProducts, formatShekels, getCategoriesForEvent, getEventLabel, sortProducts } from '../utils/styleLogic'
 
 interface CatalogPageProps {
   settings: Settings
@@ -19,6 +19,7 @@ function CatalogPage({ settings }: CatalogPageProps) {
   const [error, setError] = useState<string | null>(null)
   const [category, setCategory] = useState('all')
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<SortOption>('recommended')
 
   // useEffect רץ אחרי שהעמוד מופיע. [] בסוף = רק פעם אחת.
   useEffect(() => {
@@ -32,20 +33,21 @@ function CatalogPage({ settings }: CatalogPageProps) {
   if (isLoading) return <StatusMessage type="loading" />
   if (error) return <StatusMessage type="error" message={error} />
 
-  // הסינון עצמו קורה ב-styleLogic. כאן רק מעבירים לו את הבחירות.
-  const visibleProducts = filterProducts(products, {
+  // הסינון והמיון עצמם קורים ב-styleLogic. כאן רק מעבירים להם את הבחירות.
+  const filtered = filterProducts(products, {
     eventId: settings.eventId,
     budget: settings.budget,
     category,
     search,
   })
+  const visibleProducts = sortProducts(filtered, sort)
 
   return (
     <section>
       <div className="page-header">
         <h1>קטלוג</h1>
         <p className="summary">
-          {getEventLabel(settings.eventId)} · עד {formatShekels(settings.budget)} · {visibleProducts.length} פריטים ·{' '}
+          {getEventLabel(settings.eventId)} · עד {formatShekels(settings.budget)} · מוצגים {visibleProducts.length} פריטים ·{' '}
           <Link to="/">שינוי</Link>
         </p>
       </div>
@@ -56,6 +58,8 @@ function CatalogPage({ settings }: CatalogPageProps) {
         onCategoryChange={setCategory}
         search={search}
         onSearchChange={setSearch}
+        sort={sort}
+        onSortChange={setSort}
       />
 
       {visibleProducts.length === 0 ? (

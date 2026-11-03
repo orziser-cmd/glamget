@@ -71,6 +71,9 @@ export interface SavedLook {
   createdAt: string // תאריך בפורמט טקסט, כדי שאפשר יהיה לשמור אותו ב-localStorage
 }
 
+/** אפשרויות המיון בקטלוג */
+export type SortOption = 'recommended' | 'price-asc' | 'price-desc' | 'discount'
+
 /** כל מה שאפשר לסנן לפיו בקטלוג */
 export interface ProductFilters {
   eventId: EventId

@@ -1,4 +1,5 @@
-import { CATEGORY_LABELS } from '../utils/styleLogic'
+import type { SortOption } from '../types'
+import { CATEGORY_LABELS, SORT_OPTIONS } from '../utils/styleLogic'
 
 interface FilterBarProps {
   categories: string[]
@@ -6,20 +7,23 @@ interface FilterBarProps {
   onCategoryChange: (category: string) => void
   search: string
   onSearchChange: (search: string) => void
+  sort: SortOption
+  onSortChange: (sort: SortOption) => void
 }
 
-// שורת החיפוש והכפתורים לסינון לפי סוג פריט.
+// שורת החיפוש, הכפתורים לסינון לפי סוג פריט, והמיון.
 // הרכיב לא "זוכר" כלום בעצמו: הוא מקבל הכול ב-props ומדווח על שינויים דרך הפונקציות.
-function FilterBar({ categories, selectedCategory, onCategoryChange, search, onSearchChange }: FilterBarProps) {
+function FilterBar({
+  categories,
+  selectedCategory,
+  onCategoryChange,
+  search,
+  onSearchChange,
+  sort,
+  onSortChange,
+}: FilterBarProps) {
   return (
     <div className="filter-bar">
-      <input
-        type="search"
-        placeholder="חיפוש לפי שם, למשל dress"
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
-        aria-label="חיפוש פריטים"
-      />
       <div className="chips">
         <button
           type="button"
@@ -38,6 +42,22 @@ function FilterBar({ categories, selectedCategory, onCategoryChange, search, onS
             {CATEGORY_LABELS[category] ?? category}
           </button>
         ))}
+      </div>
+      <div className="filter-tools">
+        <input
+          type="search"
+          placeholder="חיפוש לפי שם, למשל dress"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          aria-label="חיפוש פריטים"
+        />
+        <select value={sort} onChange={(e) => onSortChange(e.target.value as SortOption)} aria-label="מיון">
+          {SORT_OPTIONS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   )

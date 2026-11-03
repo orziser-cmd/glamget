@@ -5,26 +5,31 @@ interface NavBarProps {
   savedCount: number
 }
 
-// תפריט הניווט בראש כל עמוד.
+// הכותרת העליונה של האתר: פס הודעה, ומתחתיו ניווט משני הצדדים והלוגו באמצע.
 // NavLink הוא כמו קישור רגיל, אבל הוא יודע לסמן את העמוד שאנחנו נמצאות בו.
 function NavBar({ lookCount, savedCount }: NavBarProps) {
   return (
-    <header className="navbar">
-      <NavLink to="/" className="logo">
-        Glamget
-      </NavLink>
-      <nav>
-        <NavLink to="/" end>
-          בית
+    <header className="site-header">
+      <p className="announcement">GLAM ON A BUDGET · לוק שלם לכל אירוע, בלי לחרוג מהתקציב</p>
+      <div className="navbar">
+        <nav>
+          <NavLink to="/" end>
+            בית
+          </NavLink>
+          <NavLink to="/items">קטלוג</NavLink>
+        </nav>
+        <NavLink to="/" className="logo">
+          GLAMGET
         </NavLink>
-        <NavLink to="/items">קטלוג</NavLink>
-        <NavLink to="/look">
-          הלוק שלי {lookCount > 0 && <span className="count">{lookCount}</span>}
-        </NavLink>
-        <NavLink to="/saved">
-          שמורים {savedCount > 0 && <span className="count">{savedCount}</span>}
-        </NavLink>
-      </nav>
+        <nav className="nav-side">
+          <NavLink to="/look">
+            הלוק שלי {lookCount > 0 && <span className="count">{lookCount}</span>}
+          </NavLink>
+          <NavLink to="/saved">
+            שמורים {savedCount > 0 && <span className="count">{savedCount}</span>}
+          </NavLink>
+        </nav>
+      </div>
     </header>
   )
 }

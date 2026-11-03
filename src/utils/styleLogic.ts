@@ -9,6 +9,7 @@ import type {
   Settings,
   SlotId,
   SlotOption,
+  SortOption,
 } from '../types'
 
 // "המוח" של האפליקציה: חישובים וכללים, בלי שום תצוגה.
@@ -175,4 +176,76 @@ export function createSavedLook(name: string, look: Look, settings: Settings, no
     look,
     createdAt: now.toISOString(),
   }
+}
+
+/** מעדכן לוק שמור קיים: אותו מזהה ואותו תאריך יצירה, עם הלוק, השם והבחירות החדשים */
+export function updateSavedLook(saved: SavedLook, name: string, look: Look, settings: Settings): SavedLook {
+  return {
+    ...saved,
+    name: name.trim() || saved.name,
+    eventId: settings.eventId,
+    budget: settings.budget,
+    look,
+  }
+}
+
+/** מחליף לוק שמור ברשימה לפי המזהה שלו, ומשאיר את כל השאר כמו שהם */
+export function replaceSavedLook(list: SavedLook[], updated: SavedLook): SavedLook[] {
+  return list.map((saved) => (saved.id === updated.id ? updated : saved))
+}
+
+// ---------- מיון ----------
+
+/** אפשרויות המיון, עם שם בעברית */
+export const SORT_OPTIONS: { id: SortOption; label: string }[] = [
+  { id: 'recommended', label: 'מומלץ' },
+  { id: 'price-asc', label: 'מחיר: מהזול ליקר' },
+  { id: 'price-desc', label: 'מחיר: מהיקר לזול' },
+  { id: 'discount', label: 'ההנחה הגדולה ביותר' },
+]
+
+/**
+ * ממיין מוצרים. מחזיר רשימה חדשה ולא משנה את המקורית.
+ * 'recommended' = הסדר שבו המוצרים הגיעו מה-API.
+ */
+export function sortProducts(products: Product[], sort: SortOption): Product[] {
+  const copy = [...products]
+  if (sort === 'price-asc') copy.sort((a, b) => finalPriceInShekels(a) - finalPriceInShekels(b))
+  if (sort === 'price-desc') copy.sort((a, b) => finalPriceInShekels(b) - finalPriceInShekels(a))
+  if (sort === 'discount') copy.sort((a, b) => b.discountPercentage - a.discountPercentage)
+  return copy
+}
+
+// ---------- השלימי את הלוק ----------
+
+/**
+ * מציעה פריטים למקום ריק בלוק. פריט מוצע רק אם:
+ * 1. הוא שייך למקום הזה (למשל נעליים)
+ * 2. הוא מתאים לאירוע
+ * 3. הלוק, אחרי שמוסיפים אותו, לא עובר את התקציב
+ * ההצעות ממוינות מהזולה ליקרה, וחוזרות רק כמה (limit).
+ */
+export function suggestForSlot(
+  products: Product[],
+  slot: SlotId,
+  look: Look,
+  settings: Settings,
+  limit = 3,
+): Product[] {
+  const eventCategories = getCategoriesForEvent(settings.eventId)
+  const fitting = products.filter(
+    (product) =>
+      getSlotForCategory(product.category) === slot &&
+      eventCategories.includes(product.category) &&
+      totalIfAdded(look, product) <= settings.budget,
+  )
+  return sortProducts(fitting, 'price-asc').slice(0, limit)
+}
+
+/** חלופות לפריט שכבר בלוק: אותו סוג, מתאימות לאירוע ולתקציב (אחרי ההחלפה), בלי הפריט הנוכחי */
+export function alternativesFor(products: Product[], current: Product, look: Look, settings: Settings, limit = 3): Product[] {
+  const slot = getSlotForCategory(current.category)
+  if (!slot) return []
+  const others = products.filter((product) => product.id !== current.id)
+  return suggestForSlot(others, slot, look, settings, limit)
 }
