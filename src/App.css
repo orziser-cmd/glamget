@@ -951,11 +951,19 @@ select:hover {
   color: var(--white);
 }
 
-.editing-banner .btn-link {
-  color: #d9d9d9;
+.btn-finish {
+  border: 1px solid var(--white);
+  background: var(--white);
+  color: var(--ink);
+  padding: 0.4rem 1rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-.editing-banner .btn-link:hover {
+.btn-finish:hover {
+  background: transparent;
   color: var(--white);
 }
 

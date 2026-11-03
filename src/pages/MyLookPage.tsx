@@ -23,11 +23,12 @@ interface MyLookPageProps {
   onRemove: (slot: SlotId) => void
   onSave: (name: string) => void
   editingName: string | null // שם הלוק השמור שעורכים, או null אם זה לוק חדש
+  onRenameEditing: (name: string) => void
   onNewLook: () => void
 }
 
 // הלוק שלי: מקום לכל סוג פריט, הצעות והחלפות, סכום מול התקציב, ושמירה
-function MyLookPage({ look, settings, onAdd, onRemove, onSave, editingName, onNewLook }: MyLookPageProps) {
+function MyLookPage({ look, settings, onAdd, onRemove, onSave, editingName, onRenameEditing, onNewLook }: MyLookPageProps) {
   const [name, setName] = useState(editingName ?? '')
   const [message, setMessage] = useState('')
   const [swapSlot, setSwapSlot] = useState<SlotId | null>(null) // באיזה מקום פתוחות עכשיו החלופות
@@ -62,7 +63,7 @@ function MyLookPage({ look, settings, onAdd, onRemove, onSave, editingName, onNe
     onSave(name)
     setName('')
     setSwapSlot(null)
-    setMessage(isEditing ? 'updated' : 'saved')
+    setMessage('saved')
   }
 
   function handleNewLook() {
@@ -122,10 +123,10 @@ function MyLookPage({ look, settings, onAdd, onRemove, onSave, editingName, onNe
       {isEditing && (
         <div className="editing-banner">
           <span>
-            עורכת את הלוק השמור: <b>{editingName}</b>
+            עורכת את הלוק השמור: <b>{editingName}</b> · כל שינוי נשמר אוטומטית
           </span>
-          <button type="button" className="btn-link" onClick={handleNewLook}>
-            ביטול העריכה והתחלת לוק חדש
+          <button type="button" className="btn-finish" onClick={handleNewLook}>
+            סיום עריכה ✓
           </button>
         </div>
       )}
@@ -138,7 +139,7 @@ function MyLookPage({ look, settings, onAdd, onRemove, onSave, editingName, onNe
           if (!product) {
             const emptyText =
               remaining > 0
-                ? `אין ${slot.label} שנכנס ב-${formatShekels(remaining)} שנשארו`
+                ? `נשארו לך ${formatShekels(remaining)} בתקציב, ואין ${slot.label} במחיר הזה`
                 : 'התקציב נגמר. הסירי או החליפי פריט יקר'
             return (
               <div key={slot.id} className="slot slot-empty">
@@ -178,7 +179,7 @@ function MyLookPage({ look, settings, onAdd, onRemove, onSave, editingName, onNe
                   {renderProductList(
                     alternativesFor(products, product, look, settings),
                     'החליפי',
-                    `אין ${slot.label} אחר שנכנס בתקציב`,
+                    'אין חלופה במחיר שמתאים לתקציב',
                   )}
                 </div>
               )}
@@ -189,32 +190,46 @@ function MyLookPage({ look, settings, onAdd, onRemove, onSave, editingName, onNe
 
       <BudgetBar total={total} budget={settings.budget} />
 
-      <form className="card save-form" onSubmit={handleSave}>
-        <label htmlFor="look-name">{isEditing ? 'עדכון הלוק השמור' : 'שמירת הלוק'}</label>
-        <div className="save-row">
+      {isEditing ? (
+        <div className="card save-form">
+          <label htmlFor="look-name">שם הלוק</label>
           <input
             id="look-name"
             type="text"
-            placeholder="שם ללוק, למשל: החתונה של רוני"
             value={name}
             onChange={(e) => {
               setName(e.target.value)
-              setMessage('')
+              onRenameEditing(e.target.value)
             }}
           />
-          <button type="submit" className="btn btn-primary">
-            {isEditing ? 'עדכון הלוק' : 'שמירה'}
-          </button>
         </div>
-        {message === 'saved' || message === 'updated' ? (
-          <p className="added-message">
-            {message === 'saved' ? 'הלוק נשמר' : 'הלוק עודכן'}, ואפשר להתחיל לוק חדש!{' '}
-            <Link to="/saved">ללוקים השמורים ←</Link>
-          </p>
-        ) : (
-          message && <p className="form-error">{message}</p>
-        )}
-      </form>
+      ) : (
+        <form className="card save-form" onSubmit={handleSave}>
+          <label htmlFor="look-name">שמירת הלוק</label>
+          <div className="save-row">
+            <input
+              id="look-name"
+              type="text"
+              placeholder="שם ללוק, למשל: החתונה של רוני"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value)
+                setMessage('')
+              }}
+            />
+            <button type="submit" className="btn btn-primary">
+              שמירה
+            </button>
+          </div>
+          {message === 'saved' ? (
+            <p className="added-message">
+              הלוק נשמר, ואפשר להתחיל לוק חדש! <Link to="/saved">ללוקים השמורים ←</Link>
+            </p>
+          ) : (
+            message && <p className="form-error">{message}</p>
+          )}
+        </form>
+      )}
     </section>
   )
 }

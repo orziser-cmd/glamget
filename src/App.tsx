@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import NavBar from './components/NavBar'
 import CatalogPage from './pages/CatalogPage'
 import HomePage from './pages/HomePage'
@@ -38,6 +38,31 @@ function App() {
 
   const editingLook = savedLooks.find((saved) => saved.id === editingId) ?? null
 
+  // בזמן עריכה של לוק שמור: כל שינוי בלוק נשמר בו אוטומטית
+  useEffect(() => {
+    if (!editingId) return
+    setSavedLooks((current) =>
+      current.map((saved) => (saved.id === editingId ? updateSavedLook(saved, saved.name, look, settings) : saved)),
+    )
+  }, [look, editingId, settings])
+
+  // יציאה מאזור העריכה (עמוד הלוק, או הקטלוג שאליו קופצים כדי לבחור פריט) מסיימת את העריכה.
+  // הלוק השמור כבר מעודכן, אז "הלוק שלי" מתרוקן והלוק נשאר רק ב"שמורים".
+  const location = useLocation()
+  const previousPath = useRef<string | null>(null) // הכתובת הקודמת (null = האתר רק נפתח)
+  useEffect(() => {
+    const prev = previousPath.current
+    previousPath.current = location.pathname
+    if (prev === location.pathname) return // הכתובת לא השתנתה
+
+    const isEditArea = (path: string) => path === '/look' || path.startsWith('/items')
+    const leftEditArea = prev === null || isEditArea(prev)
+    if (editingId && leftEditArea && !isEditArea(location.pathname)) {
+      setLook({})
+      setEditingId(null)
+    }
+  }, [location.pathname, editingId])
+
   function handleAddToLook(product: Product) {
     setLook((current) => addToLook(current, product))
   }
@@ -47,15 +72,15 @@ function App() {
   }
 
   function handleSaveLook(name: string) {
-    if (editingLook) {
-      // עריכה של לוק קיים: מעדכנים אותו במקום ליצור עוד אחד
-      const updated = updateSavedLook(editingLook, name, look, settings)
-      setSavedLooks((current) => replaceSavedLook(current, updated))
-    } else {
-      const saved = createSavedLook(name, look, settings)
-      setSavedLooks((current) => [saved, ...current]) // החדש ראשון ברשימה
-    }
+    const saved = createSavedLook(name, look, settings)
+    setSavedLooks((current) => [saved, ...current]) // החדש ראשון ברשימה
     handleNewLook() // אחרי השמירה מתחילים לוק חדש ונקי
+  }
+
+  // שינוי שם ללוק שעורכים כרגע
+  function handleRenameEditing(name: string) {
+    if (!editingLook) return
+    setSavedLooks((current) => replaceSavedLook(current, updateSavedLook(editingLook, name, look, settings)))
   }
 
   function handleNewLook() {
@@ -95,6 +120,7 @@ function App() {
                 onRemove={handleRemoveFromLook}
                 onSave={handleSaveLook}
                 editingName={editingLook?.name ?? null}
+                onRenameEditing={handleRenameEditing}
                 onNewLook={handleNewLook}
               />
             }
